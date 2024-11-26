@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "834437865191",
+    "project_id": "iiuc-bazaar",
+    "storage_bucket": "iiuc-bazaar.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:834437865191:android:1323a89705a650149f0c42",
+        "android_client_info": {
+          "package_name": "com.example.sazidul.iiuc_bazaar"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAzr9jXxA_UGp7o5DcL3bJ2AMo-lsY_YyQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
