@@ -124,7 +124,7 @@ class _UpdateProductsPageState extends State<UpdateProductsPage> {
                             style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
                           ),
                           Text(
-                            "\$${product.price.toStringAsFixed(2)}",
+                            "\৳${product.price.toStringAsFixed(2)}",
                             style: const TextStyle(fontSize: 12),
                           ),
                           Text(

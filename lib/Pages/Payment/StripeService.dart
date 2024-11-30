@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
 
 class StripeService {
@@ -33,6 +34,7 @@ class StripeService {
 
   // Create Payment Intent
   Future<String?> _createPaymentIntent(double amount, String currency) async {
+    String secretKey = dotenv.get('SECRET_KEY');
     try {
       final Dio dio = Dio();
       Map<String, dynamic> data = {
@@ -46,7 +48,7 @@ class StripeService {
         options: Options(
           contentType: Headers.formUrlEncodedContentType,
           headers: {
-            "Authorization": "Bearer sk_test_51L0nR1GypfIe6ms7mMC9ksIaBd0vZ6bv41AScrEDT9GMRbkWZ6IwQcB9gpKyD2EZyuPcYc0V99sGifib7ND0TGkG00uLCLJdeN", // Replace with your actual secret key
+            "Authorization": "Bearer ${secretKey}", // Replace with your actual secret key
             "Content-Type": 'application/x-www-form-urlencoded',
           },
         ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:get/get.dart';
 import 'package:iiuc_bazaar/Navigation/Buttom_Nav_Bar.dart'; // Import your bottom nav bar
@@ -7,8 +8,10 @@ import 'package:iiuc_bazaar/Navigation/Buttom_Nav_Bar.dart'; // Import your bott
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(); // Initialize Firebase
+  await dotenv.load();
   WidgetsFlutterBinding.ensureInitialized();
-  Stripe.publishableKey = "pk_test_51L0nR1GypfIe6ms7JAJtszTGuRcc6YwHoiGsnC1wYQDKKyZKfRJbUDrlDcY5vlSIUOc0SsC2NtjUW2EJiXA9FP6J00TuO8ITrd";
+  // Stripe.publishableKey = "pk_test_51L0nR1GypfIe6ms7JAJtszTGuRcc6YwHoiGsnC1wYQDKKyZKfRJbUDrlDcY5vlSIUOc0SsC2NtjUW2EJiXA9FP6J00TuO8ITrd";
+  Stripe.publishableKey = dotenv.get('Publishable_Key');
   runApp(const MyApp());
 }
 
