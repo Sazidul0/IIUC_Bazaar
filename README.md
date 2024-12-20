@@ -5,7 +5,7 @@ A university-based e-commerce application designed exclusively for IIUC students
 
 ## 📖 Table of Contents
 1. [Features](#features)
-2. [Architecture](#architecture)
+2. [Architecture](#Architecture)
 3. [Technology Stack](#technology-stack)
 4. [Installation](#installation)
 5. [Usage](#usage)
@@ -17,7 +17,7 @@ A university-based e-commerce application designed exclusively for IIUC students
 
 ---
 
-## 🎯 Features (#features)
+## 🎯 Features
 
 ### Authentication
 - **University Email Restriction**: Only emails ending with `@ugrad.iiuc.ac.bd` can sign up.
@@ -41,7 +41,7 @@ A university-based e-commerce application designed exclusively for IIUC students
 ### Delivery Location
 - Predefined university locations, such as **FAZ**, **C Building**, **CXB**, etc., ensure efficient delivery.
 
-### 🔔 Notification System (#notification-system)
+### 🔔 Notification System 
  **Buyer Notifications**:
 - **Card Payment**: Payment success notification.
 - **Cash on Delivery**: Order confirmation notification.
@@ -53,7 +53,7 @@ Notifications ensure a seamless buying and selling experience.
 
 ---
 
-## 🏗 Architecture (#architecture)
+## 🏗 Architecture
 The application follows the **Model-View-ViewModel (MVVM)** pattern:
 - **Model**: Manages data and business logic.
 - **View**: Displays the UI and interacts with users.
@@ -61,7 +61,7 @@ The application follows the **Model-View-ViewModel (MVVM)** pattern:
 
 ---
 
-## 💻 Technology Stack (#technology-stack)
+## 💻 Technology Stack 
 1. **Frontend**: [Flutter](https://flutter.dev/)
 2. **State Management**: [GetX](https://pub.dev/packages/get)
 3. **Backend**: [Firebase](https://firebase.google.com/) (Authentication, Realtime Database, Storage)
@@ -70,7 +70,7 @@ The application follows the **Model-View-ViewModel (MVVM)** pattern:
 
 ---
 
-## 🚀 Installation (#installation)
+## 🚀 Installation 
 
 ### Prerequisites
 - Flutter SDK
@@ -101,7 +101,7 @@ The application follows the **Model-View-ViewModel (MVVM)** pattern:
 
 ---
 
-## 📚 Usage (#usage)
+## 📚 Usage 
 ### Buyer Workflow
 1. **Signup**: Register with your university email (@ugrad.iiuc.ac.bd).
 2. **Browse Products**: Add items to your cart.
@@ -117,7 +117,7 @@ The application follows the **Model-View-ViewModel (MVVM)** pattern:
 ---
 
 
-## 🚀 Release Versions(#release-version)
+## 🚀 Release Versions
 
 - [Download Latest Release](https://github.com/Sazidul0/IIUC_Bazaar/releases)  
   You can download the latest release version for Android directly from the link above.
@@ -125,7 +125,7 @@ The application follows the **Model-View-ViewModel (MVVM)** pattern:
 ---
 
 
-# 📹 Demo Video (#demo-video)
+# 📹 Demo Video 
 
 <!-- Using HTML to control the image size and link to Google Drive -->
 <a href="https://drive.google.com/file/d/1EsV_THOWT_rg8eOT8RUDRO2h_3VH0Vai/view?usp=sharing">
@@ -134,7 +134,7 @@ The application follows the **Model-View-ViewModel (MVVM)** pattern:
 
 ---
 
-## 🛠 Challenges and Solutions (#challenges-and-solutions)
+## 🛠 Challenges and Solutions 
 - **Challenge**: Restricting Access  
   **Solution**: Validate email domain for `@ugrad.iiuc.ac.bd`.
 
@@ -144,7 +144,7 @@ The application follows the **Model-View-ViewModel (MVVM)** pattern:
 - **Challenge**: Secure Payment Integration  
   **Solution**: Integrated Stripe API for safe card payments.
 
-## 🌟 Future Enhancements (#future-enhancements)
+## 🌟 Future Enhancements 
 - Add real-time chat between buyers and sellers.
 - Expand delivery location options.
 - Integrate advanced analytics for seller performance.
@@ -152,7 +152,7 @@ The application follows the **Model-View-ViewModel (MVVM)** pattern:
 
 ---
 
-## 📜 License (#license)
+## 📜 License 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
