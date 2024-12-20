@@ -9,7 +9,7 @@ A university-based e-commerce application designed exclusively for IIUC students
 3. [Technology Stack](#technology-stack)
 4. [Installation](#installation)
 5. [Usage](#usage)
-6. [Notification System](#notification-system)
+6. [Release Versions](#release-version)
 7. [Demo Video](#demo-video)
 8. [Challenges and Solutions](#challenges-and-solutions)
 9. [Future Enhancements](#future-enhancements)
@@ -17,7 +17,7 @@ A university-based e-commerce application designed exclusively for IIUC students
 
 ---
 
-## 🎯 Features
+## 🎯 Features (#features)
 
 ### Authentication
 - **University Email Restriction**: Only emails ending with `@ugrad.iiuc.ac.bd` can sign up.
@@ -41,9 +41,19 @@ A university-based e-commerce application designed exclusively for IIUC students
 ### Delivery Location
 - Predefined university locations, such as **FAZ**, **C Building**, **CXB**, etc., ensure efficient delivery.
 
+### 🔔 Notification System (#notification-system)
+ **Buyer Notifications**:
+- **Card Payment**: Payment success notification.
+- **Cash on Delivery**: Order confirmation notification.
+
+**Seller Notifications**:
+- **New order alerts** with delivery details.
+
+Notifications ensure a seamless buying and selling experience.
+
 ---
 
-## 🏗 Architecture
+## 🏗 Architecture (#architecture)
 The application follows the **Model-View-ViewModel (MVVM)** pattern:
 - **Model**: Manages data and business logic.
 - **View**: Displays the UI and interacts with users.
@@ -51,7 +61,7 @@ The application follows the **Model-View-ViewModel (MVVM)** pattern:
 
 ---
 
-## 💻 Technology Stack
+## 💻 Technology Stack (#technology-stack)
 1. **Frontend**: [Flutter](https://flutter.dev/)
 2. **State Management**: [GetX](https://pub.dev/packages/get)
 3. **Backend**: [Firebase](https://firebase.google.com/) (Authentication, Realtime Database, Storage)
@@ -60,7 +70,7 @@ The application follows the **Model-View-ViewModel (MVVM)** pattern:
 
 ---
 
-## 🚀 Installation
+## 🚀 Installation (#installation)
 
 ### Prerequisites
 - Flutter SDK
@@ -75,7 +85,8 @@ The application follows the **Model-View-ViewModel (MVVM)** pattern:
    cd IIUC_Bazaar
 
 2. **Install Dependencies**:
-   ```flutter pub get
+   ```bash
+   flutter pub get
 
 3. **Set Up Firebase**:
    - Add your google-services.json (Android) and GoogleService-Info.plist (iOS) files.
@@ -85,11 +96,12 @@ The application follows the **Model-View-ViewModel (MVVM)** pattern:
    - Replace the placeholder API keys in payment_service.dart with your Stripe credentials.
 
 5. **Run the App**:
-   ``` flutter run
+   ```bash
+   flutter run
 
 ---
 
-## 📚 Usage
+## 📚 Usage (#usage)
 ### Buyer Workflow
 1. **Signup**: Register with your university email (@ugrad.iiuc.ac.bd).
 2. **Browse Products**: Add items to your cart.
@@ -104,28 +116,25 @@ The application follows the **Model-View-ViewModel (MVVM)** pattern:
 
 ---
 
-# 🔔 Notification System
 
-## Buyer Notifications:
-- **Card Payment**: Payment success notification.
-- **Cash on Delivery**: Order confirmation notification.
+## 🚀 Release Versions(#release-version)
 
-## Seller Notifications:
-- **New order alerts** with delivery details.
+- [Download Latest Release](https://github.com/Sazidul0/IIUC_Bazaar/releases)  
+  You can download the latest release version for Android directly from the link above.
 
-Notifications ensure a seamless buying and selling experience.
+---
 
 
-# 📹 Demo Video
+# 📹 Demo Video (#demo-video)
 
 <!-- Using HTML to control the image size and link to Google Drive -->
 <a href="https://drive.google.com/file/d/1EsV_THOWT_rg8eOT8RUDRO2h_3VH0Vai/view?usp=sharing">
     <img src="https://i.ibb.co/com/F5HLWHY/6206247504320774581.jpg" alt="Demo Video" width="400"/>
 </a>
 
+---
 
-
-## 🛠 Challenges and Solutions
+## 🛠 Challenges and Solutions (#challenges-and-solutions)
 - **Challenge**: Restricting Access  
   **Solution**: Validate email domain for `@ugrad.iiuc.ac.bd`.
 
@@ -135,13 +144,15 @@ Notifications ensure a seamless buying and selling experience.
 - **Challenge**: Secure Payment Integration  
   **Solution**: Integrated Stripe API for safe card payments.
 
-## 🌟 Future Enhancements
+## 🌟 Future Enhancements (#future-enhancements)
 - Add real-time chat between buyers and sellers.
 - Expand delivery location options.
 - Integrate advanced analytics for seller performance.
 - Introduce AI-based product recommendations.
 
-## 📜 License
+---
+
+## 📜 License (#license)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
