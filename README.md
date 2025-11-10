@@ -75,7 +75,7 @@ The application follows the **Model-View-ViewModel (MVVM)** pattern:
    cd IIUC_Bazaar
 
 2. **Install Dependencies**:
-   ```flutter pub get
+   ```bash flutter pub get
    ```
 
 3. **Set Up Firebase**:
@@ -86,7 +86,7 @@ The application follows the **Model-View-ViewModel (MVVM)** pattern:
    - Replace the placeholder API keys in payment_service.dart with your Stripe credentials.
 
 5. **Run the App**:
-   ``` flutter run
+   ```bash flutter run
    ```
 
 
