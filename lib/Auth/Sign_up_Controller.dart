@@ -1,7 +1,7 @@
 import 'package:get/get.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../MVVM/Models/UserModel.dart';
+import '../MVVM/Models/userModel.dart';
 
 class SignUpController extends GetxController {
   // Reactive variables for the form fields

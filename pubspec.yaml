@@ -49,6 +49,9 @@ dependencies:
   dio: ^5.7.0
   carousel_slider: ^5.0.0
   flutter_dotenv: ^5.2.1
+  google_generative_ai: ^0.4.7
+  flutter_toggle_button: ^0.0.4
+  timeago: ^3.7.1
 
 dev_dependencies:
   flutter_test:

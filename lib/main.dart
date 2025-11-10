@@ -10,7 +10,6 @@ void main() async {
   await Firebase.initializeApp(); // Initialize Firebase
   await dotenv.load();
   WidgetsFlutterBinding.ensureInitialized();
-  // Stripe.publishableKey = "pk_test_51L0nR1GypfIe6ms7JAJtszTGuRcc6YwHoiGsnC1wYQDKKyZKfRJbUDrlDcY5vlSIUOc0SsC2NtjUW2EJiXA9FP6J00TuO8ITrd";
   Stripe.publishableKey = dotenv.get('Publishable_Key');
   runApp(const MyApp());
 }

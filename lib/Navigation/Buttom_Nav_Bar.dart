@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:get/get.dart';
+
 import 'package:iiuc_bazaar/Pages/Home.dart';
 import 'package:iiuc_bazaar/Pages/Products.dart';
 import 'package:iiuc_bazaar/Pages/Cart.dart';
 import 'package:iiuc_bazaar/Pages/Profile.dart';
 import 'package:iiuc_bazaar/Auth/LogIn.dart';
-import 'package:get/get.dart';
+
+import 'package:iiuc_bazaar/widget/chatbot_floating_button.dart'; // 👈 Import new widget
 
 class MyBottomNavBar extends StatefulWidget {
   final int initialIndex;
@@ -17,7 +20,7 @@ class MyBottomNavBar extends StatefulWidget {
 }
 
 class _BottomNavBarState extends State<MyBottomNavBar> {
-  late int myCurrentIndex; // Dynamic initial index
+  late int myCurrentIndex;
 
   final List<Widget> pages = [
     const Home(),
@@ -34,14 +37,13 @@ class _BottomNavBarState extends State<MyBottomNavBar> {
 
   void onTabTapped(int index) {
     if ((index == 2 || index == 3) && FirebaseAuth.instance.currentUser == null) {
-// If trying to access Cart or Profile and the user is not logged in
+      // Redirect unauthenticated users
       Get.to(() => const LoginScreen())?.then((_) {
-// Refresh user state after navigating back from login
-        setState(() {});
+        setState(() {}); // Refresh user state after returning
       });
     } else {
       setState(() {
-        myCurrentIndex = index; // No restriction on Home and Products
+        myCurrentIndex = index;
       });
     }
   }
@@ -55,28 +57,36 @@ class _BottomNavBarState extends State<MyBottomNavBar> {
           return const Center(child: CircularProgressIndicator());
         }
 
-// Access the current user state
-        User? currentUser = snapshot.data;
+        final User? currentUser = snapshot.data;
 
-// If the user is not logged in, show the login screen
         if (currentUser == null) {
-          return const LoginScreen(); // Directly show the login screen
+          return const LoginScreen();
         }
 
-// If user is logged in, show the main application interface
         return Scaffold(
-          body: IndexedStack(
-            index: myCurrentIndex,
-            children: pages,
+          body: Stack(
+            children: [
+              // ✅ Keep your tab pages
+              IndexedStack(
+                index: myCurrentIndex,
+                children: pages,
+              ),
+
+              // 🧠 Add floating chatbot overlay
+              const FloatingChatbot(),
+            ],
           ),
           bottomNavigationBar: Container(
             margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-            decoration: BoxDecoration(boxShadow: [
-              BoxShadow(
+            decoration: BoxDecoration(
+              boxShadow: [
+                BoxShadow(
                   color: Colors.black.withOpacity(0.5),
                   blurRadius: 25,
-                  offset: const Offset(8, 20))
-            ]),
+                  offset: const Offset(8, 20),
+                )
+              ],
+            ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(30),
               child: BottomNavigationBar(
