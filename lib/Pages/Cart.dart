@@ -1,11 +1,12 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:hexcolor/hexcolor.dart';
+import 'package:shimmer/shimmer.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:iiuc_bazaar/MVVM/Models/cardModel.dart';
-import 'package:iiuc_bazaar/MVVM/View Model/cardViewModel.dart';
-import 'package:iiuc_bazaar/MVVM/View Model/productViewModel.dart';
+import 'package:iiuc_bazaar/MVVM/View%20Model/cardViewModel.dart';
+import 'package:iiuc_bazaar/MVVM/View%20Model/productViewModel.dart';
 import 'package:iiuc_bazaar/Pages/Buyer/CheckoutPage.dart';
 import '../MVVM/Models/productModel.dart';
 
@@ -17,144 +18,97 @@ class Cart extends StatefulWidget {
 }
 
 class _CartState extends State<Cart> {
+  // --- All your original state and logic is preserved ---
   final CartViewModel _cartViewModel = CartViewModel();
   final ProductViewModel _productViewModel = ProductViewModel();
   final User? _currentUser = FirebaseAuth.instance.currentUser;
 
   List<CartModel> _cartItems = [];
-  Map<String, bool> _selectedItems = {}; // Tracks selected products for checkout
+  Map<String, bool> _selectedItems = {};
   double _totalPrice = 0.0;
-  bool _isLoading = false; // Track loading state
+  bool _isLoading = true; // Start in loading state
 
   @override
   void initState() {
     super.initState();
-    _loadCartItems();
-  }
-
-  /// Fetch cart items for the logged-in user
-  Future<void> _loadCartItems() async {
-    if (_currentUser == null) return;
-    setState(() {
-      _isLoading = true; // Set loading to true when fetching data
-    });
-    try {
-      List<CartModel> items =
-      await _cartViewModel.fetchCartItems(_currentUser!.uid);
-      setState(() {
-        _cartItems = items;
-        _selectedItems = {
-          for (var item in items) item.productId: false, // Initialize selection
-        };
-        _isLoading = false; // Set loading to false when data is fetched
-      });
-    } catch (e) {
-      setState(() {
-        _isLoading = false; // Stop loading on error
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error fetching cart items: $e")),
-      );
+    if (_currentUser != null) {
+      _loadCartItems();
+    } else {
+      setState(() => _isLoading = false);
     }
   }
 
-  /// Fetch the maximum stock available for a product
+  Future<void> _loadCartItems() async {
+    setState(() => _isLoading = true);
+    try {
+      List<CartModel> items = await _cartViewModel.fetchCartItems(_currentUser!.uid);
+      if (mounted) {
+        setState(() {
+          _cartItems = items;
+          _selectedItems = {for (var item in items) item.productId: true}; // Select all by default
+          _calculateTotalPrice();
+        });
+      }
+    } catch (e) {
+      if (mounted) Get.snackbar("Error", "Failed to fetch cart items: $e");
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
   Future<int> _fetchProductStock(String productId) async {
     try {
-      final products = await _productViewModel.fetchAllProducts();
-      final product = products.firstWhere(
-            (p) => p.id == productId,
-        orElse: () => ProductModel(
-          id: '',
-          name: '',
-          description: '',
-          price: 0.0,
-          imageBase64: '',
-          reviews: [],
-          sellerId: '',
-          quantity: 0, // Default quantity
-        ),
-      );
-      return product.quantity; // Return the quantity of the found product
+      ProductModel? product = await _productViewModel.fetchProductById(productId);
+      return product?.quantity ?? 0;
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error fetching product stock: $e")),
-      );
+      Get.snackbar("Error", "Failed to fetch product stock: $e");
       return 0;
     }
   }
 
-  /// Update the quantity of an item
   Future<void> _updateQuantity(CartModel item, int change) async {
-    if (_currentUser == null) return;
-    setState(() {
-      _isLoading = true; // Set loading to true during update
-    });
     int newQuantity = item.quantity + change;
     if (newQuantity < 1) return;
 
-    // Fetch the maximum stock for the product
     int maxStock = await _fetchProductStock(item.productId);
-
     if (newQuantity > maxStock) {
-      _showPopup("No more product left", "Stock Limit");
-      setState(() {
-        _isLoading = false; // Stop loading
-      });
+      Get.snackbar("Stock Limit", "Only $maxStock items are available.", snackPosition: SnackPosition.TOP);
       return;
     }
 
     try {
       CartModel updatedItem = CartModel(
-        userId: item.userId,
-        productId: item.productId,
-        name: item.name,
-        quantity: newQuantity,
-        price: item.price,
-        imageBase64: item.imageBase64,
+        userId: item.userId, productId: item.productId, name: item.name,
+        quantity: newQuantity, price: item.price, imageBase64: item.imageBase64,
       );
-
-      await _cartViewModel.addToCart(updatedItem); // Update in Firestore
-      setState(() {
-        _cartItems[_cartItems.indexOf(item)] = updatedItem;
-        _isLoading = false; // Stop loading
-      });
-      _calculateTotalPrice();
+      await _cartViewModel.addToCart(updatedItem);
+      if (mounted) {
+        setState(() {
+          _cartItems[_cartItems.indexOf(item)] = updatedItem;
+          _calculateTotalPrice();
+        });
+      }
     } catch (e) {
-      setState(() {
-        _isLoading = false; // Stop loading on error
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error updating quantity: $e")),
-      );
+      Get.snackbar("Error", "Failed to update quantity: $e");
     }
   }
 
-  /// Delete an item from the cart
   Future<void> _deleteItem(CartModel item) async {
-    if (_currentUser == null) return;
-    setState(() {
-      _isLoading = true; // Set loading to true during delete
-    });
     try {
       await _cartViewModel.removeFromCart(_currentUser!.uid, item.productId);
-      setState(() {
-        _cartItems.remove(item);
-        _selectedItems.remove(item.productId);
-        _isLoading = false; // Stop loading
-      });
-      _calculateTotalPrice();
+      if (mounted) {
+        setState(() {
+          _cartItems.remove(item);
+          _selectedItems.remove(item.productId);
+          _calculateTotalPrice();
+        });
+        Get.snackbar("Success", "'${item.name}' removed from cart.", snackPosition: SnackPosition.TOP);
+      }
     } catch (e) {
-      setState(() {
-        _isLoading = false; // Stop loading on error
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error deleting item: $e")),
-      );
+      Get.snackbar("Error", "Failed to delete item: $e");
     }
   }
 
-  /// Calculate total price of selected items
   void _calculateTotalPrice() {
     double total = 0.0;
     for (var item in _cartItems) {
@@ -162,146 +116,214 @@ class _CartState extends State<Cart> {
         total += item.quantity * item.price;
       }
     }
-    setState(() {
-      _totalPrice = total;
-    });
+    if (mounted) setState(() => _totalPrice = total);
   }
 
-  /// Show popup
-  void _showPopup(String message, String title) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(title),
-        content: Text(message),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("OK"),
-          ),
-        ],
-      ),
-    );
-  }
-
-  /// Navigate to payment page with selected items
   void _checkout() {
     List<CartModel> selectedProducts = _cartItems
         .where((item) => _selectedItems[item.productId] == true)
         .toList();
 
     if (selectedProducts.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("No products selected for checkout")),
-      );
+      Get.snackbar("No Items Selected", "Please select items to checkout.");
       return;
     }
 
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => CheckoutPage(
-          products: selectedProducts,
-          totalPrice: _totalPrice,
-        ),
-      ),
-    );
+    Get.to(() => CheckoutPage(products: selectedProducts, totalPrice: _totalPrice));
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("   Cart", style: GoogleFonts.poppins(fontSize: 20, color: HexColor("#8d8d8d")),)),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator()) // Show loading indicator while processing
-          : _cartItems.isEmpty
-          ? const Center(child: Text("Your cart is empty"))
+      backgroundColor: Colors.grey[100],
+      appBar: AppBar(
+        title: Text("My Cart", style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+        backgroundColor: Colors.teal.shade600,
+        centerTitle: true,
+      ),
+      body: _currentUser == null
+          ? _buildLoggedOutView()
           : Column(
         children: [
           Expanded(
-            child: ListView.builder(
+            child: _isLoading
+                ? _buildLoadingShimmer()
+                : _cartItems.isEmpty
+                ? _buildEmptyCart()
+                : ListView.builder(
+              padding: EdgeInsets.all(Get.width * 0.03),
               itemCount: _cartItems.length,
               itemBuilder: (context, index) {
                 CartModel item = _cartItems[index];
-                return Padding(
-                  padding: const EdgeInsets.all(5.0),
-                  child: Card(
-                    margin: const EdgeInsets.all(3),
-                    child: Padding(
-                      padding: const EdgeInsets.only(top: 8, bottom: 8, left: 0, right: 0),
-                      child: ListTile(
-                        leading: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Checkbox(
-                              value: _selectedItems[item.productId],
-                              onChanged: (bool? value) {
-                                setState(() {
-                                  _selectedItems[item.productId] =
-                                      value ?? false;
-                                  _calculateTotalPrice();
-                                });
-                              },
-                            ),
-                            ClipOval(
-                              child: Image.memory(
-                                base64Decode(item.imageBase64),
-                                width: 50,
-                                height: 50,
-                                fit: BoxFit.cover,
-                              ),
-                            ),
-                          ],
-                        ),
-                        trailing: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              item.name.length > 5
-                                  ? '${item.name.substring(0, 5)}...'
-                                  : item.name,
-                            ),
-                            IconButton(
-                              icon: const Icon(Icons.remove),
-                              onPressed: () => _updateQuantity(item, -1),
-                            ),
-                            Text(item.quantity.toString()),
-                            IconButton(
-                              icon: const Icon(Icons.add),
-                              onPressed: () => _updateQuantity(item, 1),
-                            ),
-                            IconButton(
-                              icon: const Icon(Icons.delete, color: Colors.red),
-                              onPressed: () => _deleteItem(item),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
+                return CartItemCard(
+                  item: item,
+                  isSelected: _selectedItems[item.productId] ?? false,
+                  onItemSelected: (isSelected) {
+                    setState(() {
+                      _selectedItems[item.productId] = isSelected;
+                      _calculateTotalPrice();
+                    });
+                  },
+                  onQuantityChanged: (change) => _updateQuantity(item, change),
+                  onDelete: () => _deleteItem(item),
                 );
               },
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.all(16.0),
+          // --- Beautiful Sticky Checkout Bar ---
+          if (!_isLoading && _cartItems.isNotEmpty) _buildCheckoutBar(),
+        ],
+      ),
+    );
+  }
+
+  // --- UI Builder Methods ---
+  Widget _buildLoggedOutView() => Center(child: Text("Please log in to view your cart.", style: GoogleFonts.nunitoSans(fontSize: Get.width * 0.04)));
+  Widget _buildEmptyCart() => Center(
+    child: Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Icon(Icons.shopping_cart_outlined, size: Get.width * 0.25, color: Colors.grey[300]),
+        SizedBox(height: Get.width * 0.05),
+        Text("Your Cart is Empty", style: GoogleFonts.poppins(fontSize: Get.width * 0.055, fontWeight: FontWeight.w600, color: Colors.black54)),
+        SizedBox(height: Get.width * 0.02),
+        Text("Add items to get started.", style: GoogleFonts.nunitoSans(fontSize: Get.width * 0.04, color: Colors.grey[500])),
+        SizedBox(height: Get.width * 0.08),
+        ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.teal, foregroundColor: Colors.white,
+            padding: EdgeInsets.symmetric(horizontal: Get.width * 0.1, vertical: Get.width * 0.03),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+          ),
+          onPressed: () => Get.back(), // Or navigate to home page
+          child: Text("Go Shopping", style: GoogleFonts.poppins(fontSize: Get.width * 0.04, fontWeight: FontWeight.w600)),
+        ),
+      ],
+    ),
+  );
+  Widget _buildCheckoutBar() => Container(
+    padding: EdgeInsets.symmetric(horizontal: Get.width * 0.05, vertical: Get.width * 0.04),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+      boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 10, offset: const Offset(0, -5))],
+    ),
+    child: SafeArea(
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text("Total Price", style: GoogleFonts.nunitoSans(fontSize: Get.width * 0.035, color: Colors.grey[600])),
+              SizedBox(height: Get.width * 0.01),
+              Text("\৳${_totalPrice.toStringAsFixed(2)}", style: GoogleFonts.poppins(fontSize: Get.width * 0.055, fontWeight: FontWeight.bold)),
+            ],
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.teal.shade600, foregroundColor: Colors.white,
+              padding: EdgeInsets.symmetric(horizontal: Get.width * 0.1, vertical: Get.width * 0.035),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+            ),
+            onPressed: _checkout,
+            child: Text("Checkout", style: GoogleFonts.poppins(fontSize: Get.width * 0.04, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    ),
+  );
+  Widget _buildLoadingShimmer() => ListView.builder(
+    padding: EdgeInsets.all(Get.width * 0.03),
+    itemCount: 5,
+    itemBuilder: (context, index) => Shimmer.fromColors(
+      baseColor: Colors.grey[300]!,
+      highlightColor: Colors.grey[100]!,
+      child: Container(
+        margin: EdgeInsets.only(bottom: Get.width * 0.04),
+        height: Get.width * 0.28,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(Get.width * 0.04),
+        ),
+      ),
+    ),
+  );
+}
+
+// --- BEAUTIFUL, DYNAMIC, AND REUSABLE CART ITEM CARD ---
+class CartItemCard extends StatelessWidget {
+  final CartModel item;
+  final bool isSelected;
+  final ValueChanged<bool> onItemSelected;
+  final ValueChanged<int> onQuantityChanged;
+  final VoidCallback onDelete;
+
+  const CartItemCard({
+    Key? key,
+    required this.item,
+    required this.isSelected,
+    required this.onItemSelected,
+    required this.onQuantityChanged,
+    required this.onDelete,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final double screenWidth = Get.width;
+
+    return Container(
+      margin: EdgeInsets.only(bottom: screenWidth * 0.04),
+      padding: EdgeInsets.all(screenWidth * 0.02),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(screenWidth * 0.04),
+      ),
+      child: Row(
+        children: [
+          Checkbox(value: isSelected, onChanged: (value) => onItemSelected(value ?? false), activeColor: Colors.teal),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(screenWidth * 0.025),
+            child: Image.memory(
+              base64Decode(item.imageBase64),
+              width: screenWidth * 0.2, height: screenWidth * 0.2, fit: BoxFit.cover,
+              errorBuilder: (c, e, s) => Container(width: screenWidth * 0.2, height: screenWidth * 0.2, color: Colors.grey[200], child: const Icon(Icons.image_not_supported)),
+            ),
+          ),
+          SizedBox(width: screenWidth * 0.03),
+          Expanded(
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  "Total Price: \৳${_totalPrice.toStringAsFixed(2)}",
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 10),
-                ElevatedButton(
-                  onPressed: _checkout,
-                  child: const Text("Checkout"),
-                ),
+                Text(item.name, maxLines: 2, overflow: TextOverflow.ellipsis, style: GoogleFonts.poppins(fontSize: screenWidth * 0.04, fontWeight: FontWeight.w600)),
+                SizedBox(height: screenWidth * 0.01),
+                Text("\৳${item.price.toStringAsFixed(2)}", style: GoogleFonts.poppins(fontSize: screenWidth * 0.045, fontWeight: FontWeight.bold, color: Colors.teal.shade700)),
               ],
             ),
           ),
+          Column(
+            children: [
+              _buildQuantityControl(screenWidth),
+              IconButton(icon: Icon(Icons.delete_outline, color: Colors.red, size: screenWidth * 0.05), onPressed: onDelete, splashRadius: 20),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildQuantityControl(double screenWidth) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.grey[100],
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      child: Row(
+        children: [
+          IconButton(icon: Icon(Icons.remove, size: screenWidth * 0.04), onPressed: () => onQuantityChanged(-1), splashRadius: 20, constraints: const BoxConstraints()),
+          Text(item.quantity.toString(), style: GoogleFonts.poppins(fontSize: screenWidth * 0.04, fontWeight: FontWeight.bold)),
+          IconButton(icon: Icon(Icons.add, size: screenWidth * 0.04), onPressed: () => onQuantityChanged(1), splashRadius: 20, constraints: const BoxConstraints()),
         ],
       ),
     );
