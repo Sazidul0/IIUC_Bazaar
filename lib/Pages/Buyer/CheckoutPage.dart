@@ -48,7 +48,14 @@ class _CheckoutPageState extends State<CheckoutPage> {
     });
 
     try {
-      await StripeService.instance.makePayment(widget.totalPrice);
+      bool paymentSuccess = await StripeService.instance.makePayment(widget.totalPrice);
+
+      if (!paymentSuccess) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Payment canceled or failed.")),
+        );
+        return; // 🛑 Stop here — don’t create an order
+      }
 
       await _handleOrderCreation("Payment Successful");
 
@@ -64,9 +71,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
 
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(
-          builder: (context) => MyBottomNavBar(initialIndex: 0),
-        ),
+        MaterialPageRoute(builder: (context) => MyBottomNavBar(initialIndex: 0)),
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -78,6 +83,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
       });
     }
   }
+
 
   Future<void> _handleCashOnDelivery() async {
     if (_auth.currentUser == null || _selectedLocation == null) {

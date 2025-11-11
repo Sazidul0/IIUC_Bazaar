@@ -8,16 +8,11 @@ class StripeService {
   static final StripeService instance = StripeService._();
 
   // Make Payment Method
-  Future<void> makePayment(double totalPrice) async {
+  Future<bool> makePayment(double totalPrice) async {
     try {
-      // Create payment intent on the server
-      String? paymentIntentClientSecret = await _createPaymentIntent(
-        totalPrice,
-        "bdt",
-      );
-      if (paymentIntentClientSecret == null) return;
+      String? paymentIntentClientSecret = await _createPaymentIntent(totalPrice, "bdt");
+      if (paymentIntentClientSecret == null) return false;
 
-      // Initialize the payment sheet
       await Stripe.instance.initPaymentSheet(
         paymentSheetParameters: SetupPaymentSheetParameters(
           paymentIntentClientSecret: paymentIntentClientSecret,
@@ -25,12 +20,24 @@ class StripeService {
         ),
       );
 
-      // Display the payment sheet
-      await _processPayment();
+      // Present payment sheet and handle result
+      await Stripe.instance.presentPaymentSheet();
+
+      print("✅ Payment successful!");
+      return true;
+    } on StripeException catch (e) {
+      if (e.error.code == FailureCode.Canceled) {
+        print("⚠️ Payment canceled by user.");
+        return false;
+      }
+      print("❌ Stripe error: ${e.error.localizedMessage}");
+      return false;
     } catch (e) {
-      print("Error during payment: $e");
+      print("❌ Unexpected error: $e");
+      return false;
     }
   }
+
 
   // Create Payment Intent
   Future<String?> _createPaymentIntent(double amount, String currency) async {
