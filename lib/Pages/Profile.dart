@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:hexcolor/hexcolor.dart';
 import 'package:iiuc_bazaar/Auth/LogIn.dart'; // Assuming LogIn screen exists for navigation
 import 'package:iiuc_bazaar/Pages/Buyer/OrderInProcess.dart';
@@ -13,6 +14,7 @@ import 'package:iiuc_bazaar/Pages/Seller/AddNewProduct.dart';
 import 'package:iiuc_bazaar/Pages/Seller/ManageOrders.dart';
 import 'package:iiuc_bazaar/Pages/Seller/UpdateProduct.dart';
 import 'package:iiuc_bazaar/Pages/Seller/ViewSales.dart';
+
 
 import '../MVVM/Models/userModel.dart';
 import '../MVVM/View Model/userViewModel.dart';
@@ -98,205 +100,58 @@ class Profile extends StatelessWidget {
 
         return Scaffold(
           key: _scaffoldKey, // Assign the GlobalKey to the Scaffold
-          drawer: Drawer(
-              child:  Drawer(
-                child: Column(
-                  children: [
-                    DrawerHeader(
-                      decoration: BoxDecoration(
-                        // color: Colors.blue,
-                      ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.account_circle, size: 80, color: Colors.blue),
-                          SizedBox(height: 8),
-                          Text(
-                            userDetails.name ?? "Name not available",
-                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.blue),
-                          ),
-                        ],
-                      ),
-                    ),
-                    ListTile(
-                      leading: Icon(Icons.email),
-                      title: Text("Email"),
-                      subtitle: Text(userDetails.email ?? "Email not available"),
-                    ),
-                    ListTile(
-                      leading: Icon(Icons.phone),
-                      title: Text("Phone"),
-                      subtitle: Text(userDetails.mobileNumber ?? "Phone not available"),
-                    ),
-                    ListTile(
-                      leading: Icon(Icons.person),
-                      title: Text("User Type"),
-                      subtitle: Text(userDetails.userType ?? "N/A"),
-                    ),
-                    ListTile(
-                      title: Row(
-                        children: [
-
-                          IconButton(
-                            icon: Icon(Icons.exit_to_app),
-                            onPressed: () {
-                              _showExitConfirmationDialog(context);
-                            },
-                          ),
-                          Text(" Exit"),
-                        ],
-                      ),
-                    ),
-                    Spacer(), // Push the sign-out button to the bottom
-                    Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: ElevatedButton(
-                        onPressed: () => signOut(context),
-                        child: Text("Sign Out"),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.red,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16.0,
-                            vertical: 12.0,
-                          ),
-                          foregroundColor: Colors.white,
-                          textStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),// The drawer code provided above
-          ),
+          drawer: _buildAppDrawer(context, userDetails, signOut),
           // backgroundColor: Colors.blue,
-          body: SafeArea(
-            child: SingleChildScrollView(
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.blue,
+          body: SingleChildScrollView(
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
 
-                ),
-                width: size.width,
+              ),
+              width: size.width,
 
-                child: Column(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(21.0),
-                      child: Row(
+              child: Column(
+                children: [
+                  _buildProfileHeader(context, userDetails, _scaffoldKey),
+                  // Middle Section Based on UserType
+
+                  // Bottom Section (Same for Both Seller and Buyer)
+                  Container(
+                    height: 535,
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: HexColor("#ffffff"),
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(40),
+                        topRight: Radius.circular(40),
+                      ),
+                    ),
+                    child: Center(
+                      child: Column(
                         children: [
-                          Container(
-                            decoration: BoxDecoration(
-                              color: Colors.transparent,
-                              border: Border.all(
-                                color: Colors.black,
-                                width: 2.0,
-                              ),
-                              borderRadius: BorderRadius.circular(50),
-                            ),
-                            child: GestureDetector(
-                              onTap: () {
-                                _scaffoldKey.currentState?.openDrawer(); // Open the drawer when tapped
-                              },
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  color: Colors.transparent,
-                                  border: Border.all(
-                                    color: Colors.black,
-                                    width: 2.0,
-                                  ),
-                                  borderRadius: BorderRadius.circular(50),
-                                ),
-                                child: Icon(
-                                  Icons.account_circle,
-                                  size: size.width * 0.15,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ),
-                          ),
-                          SizedBox(width: size.width * 0.02),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              SizedBox(height: size.width * 0.05),
-                              Text(
-                                "${userDetails.name ?? 'Name not Found!'}",
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w900,
-                                  fontSize: size.width * 0.05,
-                                ),
-                              ),
-                              Text(
-                                "${userDetails.email ?? 'No email provided'}",
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: size.width * 0.03,
-                                ),
-                              ),
-                              SizedBox(height: size.width * 0.05),
-                            ],
-                          ),
-                          Spacer(),
-                          GestureDetector(
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => NotificationPage(), // Replace with your notification page widget
-                                ),
-                              );
-                            },
-                            child: Icon(
-                              Icons.notifications,
-                              size: size.width * 0.1,
-                              color: Colors.white,
-                            ),
-                          ),
 
+                          userDetails.userType == 'Seller' ? SellerProfile(userDetails) : BuyerProfile(userDetails),
+                          SizedBox(
+                            height: size.width*0.1,
+                          ),
+                          // ElevatedButton(
+                          //   onPressed: () => signOut(context),
+                          //   child: Text("Sign Out"),
+                          //   style: ElevatedButton.styleFrom(
+                          //     backgroundColor: Colors.red,
+                          //     padding: EdgeInsets.symmetric(
+                          //       horizontal: size.width * 0.1,
+                          //       vertical: size.height * 0.02,
+                          //     ),
+                          //     foregroundColor: Colors.white,
+                          //     textStyle: TextStyle(fontSize: size.width * 0.05, fontWeight: FontWeight.w600),
+                          //   ),
+                          // ),
                         ],
                       ),
                     ),
-                    // Middle Section Based on UserType
-
-                    // Bottom Section (Same for Both Seller and Buyer)
-                    Container(
-                      height: 535,
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        color: HexColor("#ffffff"),
-                        borderRadius: const BorderRadius.only(
-                          topLeft: Radius.circular(40),
-                          topRight: Radius.circular(40),
-                        ),
-                      ),
-                      child: Center(
-                        child: Column(
-                          children: [
-
-                            userDetails.userType == 'Seller' ? SellerProfile(userDetails) : BuyerProfile(userDetails),
-                            SizedBox(
-                              height: size.width*0.1,
-                            ),
-                            // ElevatedButton(
-                            //   onPressed: () => signOut(context),
-                            //   child: Text("Sign Out"),
-                            //   style: ElevatedButton.styleFrom(
-                            //     backgroundColor: Colors.red,
-                            //     padding: EdgeInsets.symmetric(
-                            //       horizontal: size.width * 0.1,
-                            //       vertical: size.height * 0.02,
-                            //     ),
-                            //     foregroundColor: Colors.white,
-                            //     textStyle: TextStyle(fontSize: size.width * 0.05, fontWeight: FontWeight.w600),
-                            //   ),
-                            // ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -306,9 +161,154 @@ class Profile extends StatelessWidget {
   }
 }
 
+/// Builds the beautiful, redesigned app drawer with a green theme.
+Drawer _buildAppDrawer(BuildContext context, UserModel userDetails, Function(BuildContext) signOut) {
+  return Drawer(
+    child: Column(
+      children: [
+        // A standard, beautiful header for user accounts in a drawer.
+        UserAccountsDrawerHeader(
+          accountName: Text(
+            userDetails.name,
+            style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 18),
+          ),
+          accountEmail: Text(
+            userDetails.email,
+            style: GoogleFonts.nunitoSans(),
+          ),
+          currentAccountPicture: CircleAvatar(
+            backgroundColor: Colors.white,
+            // Themed icon color
+            child: Icon(Icons.person, size: 45, color: Colors.teal.shade700),
+          ),
+          decoration: BoxDecoration(
+            // Themed background color
+            color: Colors.teal.shade400,
+          ),
+        ),
 
+        // User Information List Tiles
+        ListTile(
+          leading: const Icon(Icons.email_outlined),
+          title: const Text("Email"),
+          subtitle: Text(userDetails.email),
+        ),
+        ListTile(
+          leading: const Icon(Icons.phone_outlined),
+          title: const Text("Phone"),
+          subtitle: Text(userDetails.mobileNumber),
+        ),
+        ListTile(
+          leading: const Icon(Icons.badge_outlined),
+          title: const Text("User Type"),
+          subtitle: Text(userDetails.userType),
+        ),
 
+        const Divider(), // A visual separator for actions
 
+        // Exit Application ListTile
+        ListTile(
+          leading: Icon(Icons.exit_to_app, color: Colors.red[700]),
+          title: Text("Exit Application", style: TextStyle(color: Colors.red[700])),
+          onTap: () => _showExitConfirmationDialog(context),
+        ),
+
+        const Spacer(), // Pushes the sign out button to the bottom
+
+        // Redesigned Sign Out Button
+        Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: ElevatedButton.icon(
+            icon: const Icon(Icons.logout),
+            label: const Text("Sign Out",),
+            onPressed: () => signOut(context),
+            style: ElevatedButton.styleFrom(
+              // A softer, more modern red style
+              backgroundColor: HexColor("#44564a"),
+              foregroundColor: Colors.white,
+              minimumSize: const Size(double.infinity, 50), // Full width
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+              elevation: 0, // Flat design
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+/// Builds the beautiful, modern profile header with a green gradient.
+Widget _buildProfileHeader(BuildContext context, UserModel userDetails, GlobalKey<ScaffoldState> scaffoldKey) {
+  return Container(
+    // The outer container provides the background and shape
+    padding: const EdgeInsets.only(top: 50, bottom: 30, left: 20, right: 20),
+    decoration: BoxDecoration(
+      gradient: LinearGradient(
+        // Here is the beautiful green gradient
+        colors: [Colors.teal.shade400, Colors.green.shade800],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      ),
+      borderRadius: const BorderRadius.vertical(bottom: Radius.circular(30)),
+    ),
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        // Drawer Icon: A cleaner implementation using CircleAvatar
+        GestureDetector(
+          onTap: () => scaffoldKey.currentState?.openDrawer(),
+          child: const CircleAvatar(
+            radius: 30,
+            backgroundColor: Colors.white24, // Subtle background for the icon
+            child: Icon(Icons.person, color: Colors.white, size: 35),
+          ),
+        ),
+        const SizedBox(width: 15),
+
+        // User Name and Email
+        // Expanded allows the text to take available space and prevents overflow
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                userDetails.name,
+                overflow: TextOverflow.ellipsis, // Handles long names gracefully
+                style: GoogleFonts.poppins(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 20,
+                ),
+              ),
+              Text(
+                userDetails.email,
+                overflow: TextOverflow.ellipsis, // Handles long emails
+                style: GoogleFonts.nunitoSans(
+                  color: Colors.white70, // Softer color for the email
+                  fontSize: 14,
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(width: 10),
+
+        // Notification Icon: IconButton is better for taps
+        IconButton(
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const NotificationPage()),
+            );
+          },
+          icon: const Icon(Icons.notifications_outlined, color: Colors.white, size: 30),
+        ),
+      ],
+    ),
+  );
+}
 
 
 class SellerProfile extends StatelessWidget {
@@ -323,7 +323,7 @@ class SellerProfile extends StatelessWidget {
       child: Column(
         children: [
           Text("Seller Dashboard", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-          SizedBox(height: 20),
+          SizedBox(height: 5),
 
           // Seller's Grid (4 items in 2 rows, 2 columns)
           SizedBox(height: 10),

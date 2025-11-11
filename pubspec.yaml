@@ -52,6 +52,7 @@ dependencies:
   google_generative_ai: ^0.4.7
   flutter_toggle_button: ^0.0.4
   timeago: ^3.7.1
+  flutter_rating_bar: ^4.0.1
 
 dev_dependencies:
   flutter_test:

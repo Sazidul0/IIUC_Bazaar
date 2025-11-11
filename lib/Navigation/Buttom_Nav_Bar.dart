@@ -77,7 +77,7 @@ class _BottomNavBarState extends State<MyBottomNavBar> {
             ],
           ),
           bottomNavigationBar: Container(
-            margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+            margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
             decoration: BoxDecoration(
               boxShadow: [
                 BoxShadow(
@@ -90,7 +90,9 @@ class _BottomNavBarState extends State<MyBottomNavBar> {
             child: ClipRRect(
               borderRadius: BorderRadius.circular(30),
               child: BottomNavigationBar(
-                selectedItemColor: Colors.redAccent,
+                backgroundColor: Colors.transparent,
+                elevation: 0,
+                selectedItemColor: Colors.green,
                 unselectedItemColor: Colors.black,
                 currentIndex: myCurrentIndex,
                 onTap: onTabTapped,

@@ -114,13 +114,13 @@ class _FloatingChatbotState extends State<FloatingChatbot> {
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             gradient: const LinearGradient(
-              colors: [Color(0xFFFF6B6B), Colors.redAccent],
+              colors: [Color(0xFFFF6B6B), Colors.green],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.red.withOpacity(0.4),
+                color: Colors.green.withOpacity(0.4),
                 blurRadius: 12,
                 offset: const Offset(0, 4),
               )
@@ -160,7 +160,7 @@ class _FloatingChatbotState extends State<FloatingChatbot> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       decoration: const BoxDecoration(
-        color: Colors.redAccent,
+        color: Colors.green,
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       child: Row(
@@ -256,7 +256,7 @@ class _FloatingChatbotState extends State<FloatingChatbot> {
                 )
                     : CircleAvatar(
                   key: const ValueKey('send_button'),
-                  backgroundColor: Colors.redAccent,
+                  backgroundColor: Colors.green,
                   radius: 24,
                   child: IconButton(
                     icon: const Icon(Icons.send, color: Colors.white, size: 22),

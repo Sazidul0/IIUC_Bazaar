@@ -77,7 +77,6 @@ The application follows the **Model-View-ViewModel (MVVM)** pattern:
 2. **Install Dependencies**:
    ```bash 
    flutter pub get
-  
 
 3. **Set Up Firebase**:
    - Add your google-services.json (Android) and GoogleService-Info.plist (iOS) files.
@@ -89,8 +88,6 @@ The application follows the **Model-View-ViewModel (MVVM)** pattern:
 5. **Run the App**:
    ```bash 
    flutter run
-   
-
 
 
 ## 📚 Usage

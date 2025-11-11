@@ -65,7 +65,7 @@ class _NotificationPageState extends State<NotificationPage> {
         future: _notificationViewModel.getNotifications(currentUser.uid),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator(color: Colors.redAccent));
+            return const Center(child: CircularProgressIndicator(color: Colors.green));
           } else if (snapshot.hasError) {
             return _buildErrorView(snapshot.error.toString());
           } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
@@ -188,7 +188,7 @@ class _NotificationTileState extends State<NotificationTile> with SingleTickerPr
   @override
   Widget build(BuildContext context) {
     final Color iconColor = widget.isRead ? Colors.grey : Colors.white;
-    final Color iconBgColor = widget.isRead ? Colors.grey.shade300 : Colors.redAccent;
+    final Color iconBgColor = widget.isRead ? Colors.grey.shade300 : Colors.green;
 
     return FadeTransition(
       opacity: _fadeAnimation,
