@@ -54,6 +54,8 @@ dependencies:
   timeago: ^3.7.1
   flutter_rating_bar: ^4.0.1
   shimmer: ^3.0.0
+  fl_chart: ^0.70.0
+  syncfusion_flutter_charts: ^31.1.19
 
 dev_dependencies:
   flutter_test:
@@ -88,17 +90,6 @@ flutter:
   assets:
    - assets/images/
    - assets/
-   - assets/images/slide1.jpg
-   - assets/images/slide2.jpg
-   - assets/images/slide3.jpg
-   - assets/images/slide4.jpg
-   - assets/images/slide5.jpg
-   - assets/images/shoes.jpg
-   - assets/images/food.jpg
-   - assets/images/clothing.jpg
-   - assets/images/electronics.jpg
-   - assets/images/books.jpg
-   - assets/images/accessories.jpg
    - .env
   #   - images/a_dot_ham.jpeg
 
