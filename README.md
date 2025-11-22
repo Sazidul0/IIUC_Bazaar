@@ -34,6 +34,16 @@ A university-based e-commerce application designed exclusively for IIUC students
    - Manage orders and view sales performance.
    - View and manage product reviews.
 
+### Smart Chatbot (NEW)
+- Replies in **Bangla** and **English**.
+- Analyzes app data such as:
+   - Most sold products
+   - Trending items
+   - Buyer preferences
+- **Suggests sellers what products to add** (based on demand & trends).
+- **Suggests buyers what products to buy** (based on popular items & behavior).
+- Helps with navigation, order queries, FAQs, and app guidance.
+
 ### Payment Options
 - **Card Payment**: Securely integrated using **Stripe API**.
 - **Cash on Delivery**: Available for users who prefer to pay on delivery.
@@ -91,17 +101,20 @@ The application follows the **Model-View-ViewModel (MVVM)** pattern:
 
 
 ## 📚 Usage
+
 ### Buyer Workflow
 1. **Signup**: Register with your university email (@ugrad.iiuc.ac.bd).
-2. **Browse Products**: Add items to your cart.
-3. **Place Orders**: Choose a payment method and specify a delivery location.
-4. **Manage Orders**: Track pending orders and give product reviews.
+2. **Browse Products**: Explore and purchase items.
+3. **Place Orders**: Select a payment method and choose a delivery location.
+4. **Manage Orders**: Track your orders and provide product ratings.
+5. **AI Recommendations**: Get smart AI-based suggestions on products you may like.
 
 ### Seller Workflow
-1. **Signup/Login**: Register as a seller using your university email.
+1. **Signup/Login**: Register or login using your university email.
 2. **Manage Products**: Add, update, or delete products.
-3. **View Sales**: Analyze performance and orders.
+3. **View Sales**: View both monthly and total sales directly from the homepage.
 4. **Manage Orders**: Process and update order statuses.
+5. **AI Product Suggestions**: Receive AI-driven insights on what products to add based on demand and trends.
 
 ---
 
@@ -117,12 +130,16 @@ The application follows the **Model-View-ViewModel (MVVM)** pattern:
 Notifications ensure a seamless buying and selling experience.
 
 
-# 📹 Demo Video
+[//]: # (# 📹 Demo Video)
 
-<!-- Using HTML to control the image size and link to Google Drive -->
-<a href="https://drive.google.com/file/d/1EsV_THOWT_rg8eOT8RUDRO2h_3VH0Vai/view?usp=sharing">
-    <img src="https://i.ibb.co/com/F5HLWHY/6206247504320774581.jpg" alt="Demo Video" width="400"/>
-</a>
+[//]: # ()
+[//]: # (<!-- Using HTML to control the image size and link to Google Drive -->)
+
+[//]: # (<a href="https://drive.google.com/file/d/1EsV_THOWT_rg8eOT8RUDRO2h_3VH0Vai/view?usp=sharing">)
+
+[//]: # (    <img src="https://i.ibb.co/com/F5HLWHY/6206247504320774581.jpg" alt="Demo Video" width="400"/>)
+
+[//]: # (</a>)
 
 
 
@@ -135,6 +152,10 @@ Notifications ensure a seamless buying and selling experience.
 
 - **Challenge**: Secure Payment Integration  
   **Solution**: Integrated Stripe API for safe card payments.
+
+- **Challenge**: Smart Recommendations
+  **Solution**: Implemented data-driven chatbot suggestion system.
+
 
 ## 🌟 Future Enhancements
 - Add real-time chat between buyers and sellers.
