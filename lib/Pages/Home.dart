@@ -5,7 +5,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:iiuc_bazaar/MVVM/Models/orderModel.dart';
 import 'package:iiuc_bazaar/MVVM/View%20Model/orderViewModel.dart';
 import 'Products.dart';
@@ -21,7 +20,12 @@ class _HomeState extends State<Home> {
   String _userType = 'Buyer';
   bool _isLoading = true;
   final OrderViewModel _orderViewModel = OrderViewModel();
-  List<OrderModel> _salesData = [];
+
+  // Seller Dashboard Stats
+  int totalItemsSold = 0;
+  int totalEarnings = 0;
+  int thisMonthItemsSold = 0;
+  int thisMonthSales = 0;
 
   final List<String> carouselImages = [
     'assets/slide1.jpg',
@@ -54,24 +58,61 @@ class _HomeState extends State<Home> {
     }
 
     try {
-      var userDoc = await FirebaseFirestore.instance
+      // Get user type
+      final userDoc = await FirebaseFirestore.instance
           .collection('users')
           .doc(user.uid)
           .get();
 
       if (userDoc.exists && mounted) {
-        setState(() => _userType = userDoc['userType'] ?? 'Buyer');
+        setState(() {
+          _userType = userDoc['userType'] ?? 'Buyer';
+        });
       }
 
+      // Only fetch sales if seller
       if (_userType == 'Seller') {
-        _salesData = await _orderViewModel.fetchCompletedSales(user.uid);
-        if (mounted) setState(() {});
+        final List<OrderModel> completedOrders =
+        await _orderViewModel.fetchCompletedSales(user.uid);
+
+        _calculateSellerStats(completedOrders);
       }
     } catch (e) {
       print("Error loading initial data: $e");
     } finally {
-      if (mounted) setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
+  }
+
+  void _calculateSellerStats(List<OrderModel> orders) {
+    final now = DateTime.now();
+    final thisMonthStart = DateTime(now.year, now.month, 1);
+
+    totalItemsSold = 0;
+    totalEarnings = 0;
+    thisMonthItemsSold = 0;
+    thisMonthSales = 0;
+
+    for (var order in orders) {
+      if (order.status != 'Completed') continue;
+
+      final int qty = order.quantity;
+      final int price = order.totalPrice.round(); // Convert double → int (BDT)
+
+      // All-time
+      totalItemsSold += qty;
+      totalEarnings += price;
+
+      // This month only
+      if (order.orderDate.isAfter(thisMonthStart.subtract(const Duration(days: 1)))) {
+        thisMonthItemsSold += qty;
+        thisMonthSales += price;
+      }
+    }
+
+    if (mounted) setState(() {});
   }
 
   @override
@@ -105,7 +146,9 @@ class _HomeState extends State<Home> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildCarousel(),
-            if (_userType == 'Seller') _buildMonthlySalesChart(),
+            const SizedBox(height: 20),
+            if (_userType == 'Seller') _buildSellerDashboard(),
+            if (_userType == 'Seller') const SizedBox(height: 20),
             _buildCategoriesSection(),
             const SizedBox(height: 20),
           ],
@@ -141,142 +184,127 @@ class _HomeState extends State<Home> {
     );
   }
 
-  Widget _buildMonthlySalesChart() {
-    if (_salesData.isEmpty) {
-      return _buildNoSalesWidget();
-    }
-
-    final chartData = _prepareMonthlySalesData();
-
-    if (chartData.every((e) => e.amount == 0)) {
-      return _buildNoSalesWidget();
-    }
+  Widget _buildSellerDashboard() {
+    final List<DashboardCardData> cards = [
+      DashboardCardData(
+        title: "Total Items Sold",
+        value: totalItemsSold.toString(),
+        icon: Icons.shopping_bag_outlined,
+        color: Colors.teal.shade600,
+      ),
+      DashboardCardData(
+        title: "Total Earnings",
+        value: "৳$totalEarnings",
+        icon: Icons.account_balance_wallet_outlined,
+        color: Colors.green.shade600,
+      ),
+      DashboardCardData(
+        title: "This Month Items",
+        value: thisMonthItemsSold.toString(),
+        icon: Icons.today_outlined,
+        color: Colors.orange.shade600,
+      ),
+      DashboardCardData(
+        title: "This Month Sales",
+        value: "৳$thisMonthSales",
+        icon: Icons.trending_up,
+        color: Colors.purple.shade600,
+      ),
+    ];
 
     return Padding(
-      padding: EdgeInsets.all(Get.width * 0.04),
+      padding: EdgeInsets.symmetric(horizontal: Get.width * 0.04),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "Sales - Last 30 Days",
+            "Your Business Overview",
             style: GoogleFonts.poppins(
-              fontSize: Get.width * 0.052,
+              fontSize: Get.width * 0.055,
               fontWeight: FontWeight.bold,
               color: Colors.teal.shade800,
             ),
           ),
           const SizedBox(height: 16),
-          Container(
-            height: Get.width * 0.95,
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.grey.withOpacity(0.25),
-                  blurRadius: 15,
-                  offset: const Offset(0, 8),
-                ),
-              ],
+          GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              crossAxisSpacing: 16,
+              mainAxisSpacing: 16,
+              childAspectRatio: 1,
             ),
-            child: SfCartesianChart(
-              primaryXAxis: const CategoryAxis(
-                labelStyle: TextStyle(fontWeight: FontWeight.w600, fontSize: 11),
-                majorGridLines: MajorGridLines(width: 0),
-              ),
-              primaryYAxis: NumericAxis(
-                labelFormat: '৳{value}',
-                axisLine: const AxisLine(width: 0),
-                majorTickLines: const MajorTickLines(size: 0),
-                numberFormat: null,
-              ),
-              title: ChartTitle(
-                text: 'Monthly Sales Overview',
-                textStyle: GoogleFonts.poppins(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                  color: Colors.teal.shade700,
-                ),
-              ),
-              tooltipBehavior: TooltipBehavior(
-                enable: true,
-                format: 'point.x : ৳point.y',
-                animationDuration: 1,
-                textStyle: const TextStyle(fontWeight: FontWeight.bold),
-              ),
-              zoomPanBehavior: ZoomPanBehavior(enablePinching: true, enablePanning: true),
-              series: <CartesianSeries>[
-                ColumnSeries<MonthlySalesData, String>(
-                  dataSource: chartData,
-                  xValueMapper: (data, _) => data.day,
-                  yValueMapper: (data, _) => data.amount,
-                  name: 'Sales',
-                  color: Colors.teal.shade500,
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(10)),
-                  width: 0.75,
-                  spacing: 0.2,
-                  animationDuration: 1200, // Fixed the animation duration issue
-                  dataLabelSettings: const DataLabelSettings(
-                    isVisible: true,
-                    labelAlignment: ChartDataLabelAlignment.top,
-                    textStyle: TextStyle(fontWeight: FontWeight.bold, fontSize: 11),
-                  ),
-                ),
-              ],
-            ),
+            itemCount: cards.length,
+            itemBuilder: (context, index) {
+              final card = cards[index];
+              return _buildDashboardCard(
+                title: card.title,
+                value: card.value,
+                icon: card.icon,
+                color: card.color,
+              );
+            },
           ),
         ],
       ),
     );
   }
 
-  Widget _buildNoSalesWidget() {
-    return Padding(
-      padding: EdgeInsets.all(Get.width * 0.04),
-      child: Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
-          color: Colors.white,
-          boxShadow: [BoxShadow(color: Colors.grey.withOpacity(0.1), blurRadius: 10)],
-        ),
-        child: Column(
-          children: [
-            Icon(Icons.bar_chart_outlined, size: 60, color: Colors.grey[400]), // Fixed icon
-            const SizedBox(height: 12),
-            Text(
-              "No sales in the last 30 days",
-              style: GoogleFonts.poppins(fontSize: 16, color: Colors.grey[600]),
+  Widget _buildDashboardCard({
+    required String title,
+    required String value,
+    required IconData icon,
+    required Color color,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.15),
+            blurRadius: 15,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.15),
+              borderRadius: BorderRadius.circular(16),
             ),
-          ],
-        ),
+            child: Icon(icon, color: color, size: 22),
+          ),
+          const Spacer(),
+          Text(
+            value,
+            style: GoogleFonts.poppins(
+              fontSize: 26,
+              fontWeight: FontWeight.bold,
+              color: color,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            title,
+            style: GoogleFonts.poppins(
+              fontSize: 13,
+              color: Colors.grey[600],
+              fontWeight: FontWeight.w500,
+            ),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
       ),
     );
-  }
-
-  List<MonthlySalesData> _prepareMonthlySalesData() {
-    final Map<String, double> dailySales = {};
-    final now = DateTime.now();
-    final thirtyDaysAgo = now.subtract(const Duration(days: 30));
-
-    // Initialize last 30 days
-    for (int i = 29; i >= 0; i--) {
-      final date = now.subtract(Duration(days: i));
-      final key = "${date.day}/${date.month}";
-      dailySales[key] = 0;
-    }
-
-    // Fill actual sales
-    for (var order in _salesData) {
-      if (order.orderDate.isAfter(thirtyDaysAgo)) {
-        final date = order.orderDate;
-        final key = "${date.day}/${date.month}";
-        dailySales[key] = (dailySales[key] ?? 0) + order.totalPrice;
-      }
-    }
-
-    return dailySales.entries.map((e) => MonthlySalesData(e.key, e.value)).toList();
   }
 
   Widget _buildCategoriesSection() {
@@ -320,11 +348,18 @@ class _HomeState extends State<Home> {
   }
 }
 
-// Data class for chart
-class MonthlySalesData {
-  final String day;
-  final double amount;
-  MonthlySalesData(this.day, this.amount);
+// Helper class
+class DashboardCardData {
+  final String title;
+  final String value;
+  final IconData icon;
+  final Color color;
+  DashboardCardData({
+    required this.title,
+    required this.value,
+    required this.icon,
+    required this.color,
+  });
 }
 
 // Category Card
@@ -333,8 +368,12 @@ class CategoryCard extends StatelessWidget {
   final String imagePath;
   final VoidCallback onTap;
 
-  const CategoryCard({Key? key, required this.name, required this.imagePath, required this.onTap})
-      : super(key: key);
+  const CategoryCard({
+    Key? key,
+    required this.name,
+    required this.imagePath,
+    required this.onTap,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
